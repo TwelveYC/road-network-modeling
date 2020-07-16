@@ -11,4 +11,4 @@ complex network modeling for road network modeling.
 + 等等小工具
 
 ## 第一阶段：处理数据
-将数据处理每辆车每日每个json文件
+将数据处理每个小时的流量数据

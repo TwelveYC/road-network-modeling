@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="./js/bdmap.min.js"></script>
+    <script src="./js/mapv.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+<div id="container"></div>
+<script type="module">
+    import request from "./js/request.js";
+    import style from "./js/mapStyle/water_without_city.js";
+    const map = new BMap.Map("container");
+    const point = new BMap.Point(104.07, 30.67);
+    map.centerAndZoom(point, 13);
+    map.enableScrollWheelZoom(true);
+    map.setMapStyle(style);
+    const data = [];
+    request({
+        method: "get",
+        url: "/road-network-modeling/data/json_data/01/0_oclock.json"
+    }).then(res => {
+        console.log(res.length);
+        for(let v of res) {
+            var push_data = [v[1], v[2]];
+            data.push({
+                geometry:{
+                    type: "Point",
+                    coordinates: push_data
+                }
+            })
+        }
+        console.log("okok");
+        const dataSet = new mapv.DataSet(data.slice(0,10000));
+        const options = {
+            fillStyle: 'rgba(200, 200, 0, 0.8)',
+            bigData: 'Point',
+            size: 1.5,
+            draw: 'simple',
+        }
+        const mapvLayer = new mapv.baiduMapLayer(map, dataSet, options);
+    })
+    // const request = new XMLHttpRequest();
+    // request.open("get", "data/json_data/01/0_oclock.json");
+    // request.send();
+    // request.onload = function () {
+    //     console.log(this.responseText);
+    //     const res = JSON.parse(this.responseText);
+    // }
+</script>
+<style>
+    html{height:100%}
+    body{height:100%;margin:0px;padding:0px}
+    #container{height:100%}
+</style>
+</body>
+</html>
