@@ -5,52 +5,55 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="./js/bdmap.min.js"></script>
-    <script src="./js/mapv.min.js"></script>
+
+    <script src="./js/gdmap.js"></script>
+    <script src="./js/loca.js"></script>
     <title>Document</title>
 </head>
 <body>
 <div id="container"></div>
 <script type="module">
     import request from "./js/request.js";
-    import style from "./js/mapStyle/water_without_city.js";
-    const map = new BMap.Map("container");
-    const point = new BMap.Point(104.07, 30.67);
-    map.centerAndZoom(point, 13);
-    map.enableScrollWheelZoom(true);
-    map.setMapStyle(style);
-    const data = [];
+    var map = new AMap.Map('container',{
+        mapStyle: 'amap://styles/grey',
+        zoom:13,//级别
+        // center: [104.07, 30.67],//中心点坐标
+        center: [108.93702, 34.27012],
+        viewMode:'3D'//使用3D视图
+    });
     request({
-        method: "get",
-        url: "/road-network-modeling/data/json_data/01/0_oclock.json"
-    }).then(res => {
-        console.log(res.length);
-        for(let v of res) {
-            var push_data = [v[1], v[2]];
-            data.push({
-                geometry:{
-                    type: "Point",
-                    coordinates: push_data
-                }
-            })
-        }
-        console.log("okok");
-        const dataSet = new mapv.DataSet(data.slice(0,10000));
-        const options = {
-            fillStyle: 'rgba(200, 200, 0, 0.8)',
-            bigData: 'Point',
-            size: 1.5,
-            draw: 'simple',
-        }
-        const mapvLayer = new mapv.baiduMapLayer(map, dataSet, options);
+        method: 'get',
+        url: "/road-network-modeling/data/json_data/01/13_oclock.json"
+        // url: "/road-network-modeling/0-clock.json"
+    }).then( res => {
+        console.log(res);
+        const layer = new Loca.PointLayer({
+                        map: map
+        });
+        layer.setData(res.splice(0, 5000), {
+            lnglat: function (obj) {
+                let v = obj.value;
+                return v.splice(1).map(t => parseFloat(t));
+            },
+            type: "json"
+        })
+        layer.setOptions({
+            style: {
+                // 圆形半径，单位像素
+                radius: 1,
+                // 填充颜色
+                color: '#5DFBF9',
+                // 描边颜色
+                borderColor: '#5DFBF9',
+                // 描边宽度，单位像素
+                borderWidth: 1,
+                // 透明度 [0-1]
+                opacity: 1,
+            }
+        });
+
+        layer.render();
     })
-    // const request = new XMLHttpRequest();
-    // request.open("get", "data/json_data/01/0_oclock.json");
-    // request.send();
-    // request.onload = function () {
-    //     console.log(this.responseText);
-    //     const res = JSON.parse(this.responseText);
-    // }
 </script>
 <style>
     html{height:100%}
