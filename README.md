@@ -7,8 +7,7 @@ complex network modeling for road network modeling.
 
 + osmnx下载道路网络数据
 + igraph和networkx用作网络分析工具
-+ 百度地图和mapv用作数据可视化工具
++ 高德地图和cola用作数据可视化工具
 + 等等小工具
 
 ## 第一阶段：处理数据
-将数据处理每个小时的流量数据
