@@ -1,66 +1,49 @@
-# from .config import output_dir
 import json
 import time
+import xlrd
+import networkx as nx
+import igraph as ig
 
 
 def process_data():
-    total_lines = 32155500
-    with open("data/gps_20161025", "r") as fp:
-        index = 0
-        hours = 14
-        hour_data = []
-        while True:
-            i = fp.readline()
-            if not i:
-                break
-            else:
-                index += 1
-                tricks = i.split(",")
-                tricks[-1] = tricks[-1].replace("\n", "")
-                if index % 100 == 0:
-                    print("index为%s" % index)
-                seconds = int(tricks[2])
-                time_hour = time.localtime(seconds).tm_hour
-                if time_hour == hours:
-                    temp = [seconds]
-                    temp.extend(tricks[3:])
-                    hour_data.append(temp)
-        output_file_name = "14-clock.json"
-        with open(output_file_name, "w") as fs:
-            json.dump(hour_data, fs)
-    # for j in range(1, 31):
-    #     date = "data/gps_201611"
-    #     output_dir = "data/json_data/"
-    #     if j <= 9:
-    #         date += "0{}".format(j)
-    #         output_dir += "0{}".format(j)
-    #     else:
-    #         date += str(j)
-    #         output_dir += str(j)
-    #
-    #     for hours in range(24):
-    #         with open(date, "r") as fp:
-    #             index = 0
-    #             # hours = 2
-    #             hour_data = []
-    #             while True:
-    #                 i = fp.readline()
-    #                 if not i:
-    #                     break
-    #                 else:
-    #                     index += 1
-    #                     tricks = i.split(",")
-    #                     tricks[-1] = tricks[-1].replace("\n", "")
-    #                     if index % 100 == 0:
-    #                         print("已经完成百分之{}".format((index/total_lines)*100))
-    #                     seconds = int(tricks[2])
-    #                     time_hour = time.localtime(seconds).tm_hour
-    #                     if time_hour == hours:
-    #                         temp = [seconds]
-    #                         temp.extend(tricks[3:])
-    #                         hour_data.append(temp)
-    #             output_file_name = "{}/{}_oclock.json".format(output_dir, hours)
-    #             print(output_file_name)
-    #             with open(output_file_name, "w") as fs:
-    #                 json.dump(hour_data, fs)
-    #                 hour_data.clear()
+    g = nx.Graph()
+    node_table = xlrd.open_workbook("data/UTN/Shapefiles/roadNetwork/nodes/nodes.xlsx").sheet_by_index(0)
+    nodes = []
+    edges = []
+    node_attr = {}
+    edge_attr = {}
+    # lat lon osmid
+    # {"节点id":{key1:value1}}
+    for i in range(node_table.nrows):
+        v = node_table.row(i)
+        if v[2].value != "osmid":
+            nodes.append(v[2].value)
+            node_attr.update({
+                v[2].value: {
+                    "lat": v[0].value,
+                    "lon": v[1].value,
+                }
+            })
+    edge_table = xlrd.open_workbook("data/UTN/Shapefiles/roadNetwork/edges/edges.xlsx").sheet_by_index(0)
+    # from highway length oneway to nodescount road_id
+    for i in range(edge_table.nrows):
+        v = edge_table.row(i)
+        if v[0].value != "from":
+            k = tuple([v[0].value, v[4].value])
+            edges.append(k)
+            edge_attr.update({
+                k: {
+                    "highway": v[1].value,
+                    "length": v[2].value,
+                    "oneway": v[3].value,
+                    "NodesCount": v[5].value,
+                    "roadid": v[6].value
+                }
+            })
+    print(nodes)
+    print(node_attr)
+    # g.add_nodes_from(nodes)
+    # g.add_edges_from(edges)
+    # nx.set_node_attributes(g, node_attr)
+    # nx.set_edge_attributes(g, edge_attr)
+    # nx.write_gml(g, "net.gml")
