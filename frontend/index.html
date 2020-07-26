@@ -5,7 +5,6 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
     <script src="./js/gdmap.js"></script>
     <script src="./js/loca.js"></script>
     <title>Document</title>
@@ -17,38 +16,32 @@
     var map = new AMap.Map('container',{
         mapStyle: 'amap://styles/grey',
         zoom:13,//级别
-        // center: [104.07, 30.67],//中心点坐标
-        center: [108.93702, 34.27012],
+        center: [125.35, 43.88],
         viewMode:'3D'//使用3D视图
     });
     request({
-        method: 'get',
-        url: "/road-network-modeling/data/json_data/01/13_oclock.json"
-        // url: "/road-network-modeling/0-clock.json"
-    }).then( res => {
-        console.log(res);
-        const layer = new Loca.PointLayer({
-                        map: map
+        method: "get",
+        url: "/changchun.json"
+    }).then(res => {
+        console.log(res.node);
+        const nodes = res.node;
+        var layer = new Loca.ScatterPointLayer({
+            map: map
         });
-        layer.setData(res.splice(0, 5000), {
-            lnglat: function (obj) {
-                let v = obj.value;
-                return v.splice(1).map(t => parseFloat(t));
-            },
-            type: "json"
-        })
+        layer.setData(nodes, {
+            lnglat: function(v) {
+                const value = v.value;
+                return [parseFloat(value.lon), parseFloat(value.lat)]
+            }
+        });
+        // 配置样式
         layer.setOptions({
+            unit: 'px',
             style: {
-                // 圆形半径，单位像素
-                radius: 1,
-                // 填充颜色
-                color: '#5DFBF9',
-                // 描边颜色
-                borderColor: '#5DFBF9',
-                // 描边宽度，单位像素
-                borderWidth: 1,
-                // 透明度 [0-1]
-                opacity: 1,
+                radius: 2,     // 圆形半径，单位像素
+                color: '#14B4C9', // 填充颜色
+                borderWidth: 0.5,   // 边框宽度
+                borderColor: '#14B4C9'  // 边框颜色
             }
         });
 

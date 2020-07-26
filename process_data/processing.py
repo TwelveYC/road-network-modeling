@@ -1,9 +1,9 @@
 import xlrd
 import networkx as nx
-import json
 import os
 import numpy as np
 import sys
+import json
 
 
 def process_data():
@@ -16,7 +16,6 @@ def process_data():
         index = tuple([v[0].value, v[4].value, 0])
         if index in edge_attr.keys():
             index = tuple([v[0].value, v[4].value, 1])
-
         edge_attr.update({
             index: {
                 "highway": v[1].value,
@@ -31,36 +30,40 @@ def process_data():
 
 #  矫正原始数据当中的问题
 def correct_data():
-    g = nx.read_graphml("net1.graphml")
-    h = nx.read_graphml("加入边经纬度之后的数据.graphml")
     a = nx.Graph()
-    index = 0
-    h_nodes = h.nodes
-    node_attr = {}
-    for i in g.nodes:
-        if len(h_nodes[i]) is not 0:
-            node_attr.update({
-                i: {
-                    "lon": h_nodes[i].get("lon"),
-                    "lat": h_nodes[i].get("lat"),
-                }
+    a.number_of_edges()
+    g = nx.read_graphml("net.graphml")
+    h = nx.read_graphml("data/changchun.graphml")
+    print(g.number_of_edges())
+    edge_attr = {}
+    for i in g.edges:
+        if i in h.edges:
+            c = h.edges[i].copy()
+            print(c)
+            c.pop("length")
+            c.pop("oneway")
+            c.pop("highway")
+            edge_attr.update({
+                i: c
             })
-            index += 1
-    print(index)
-    nx.set_node_attributes(g, node_attr)
-    nx.write_graphml(g, "net2.gml")
-
+    nx.set_edge_attributes(g, edge_attr)
+    nx.write_graphml(g, "net1.graphml")
 
 def get_all_tensor():
-    taxi_speed = "data/UTN/Taxi-utn/Taxi-utn-speed"
-    taxi_volume = "data/UTN/Taxi-utn/Taxi-utn-volume"
-    bus_speed = "data/UTN/Bus-utn/Bus-utn-speed"
-    bus_volume = "data/UTN/Bus-utn/Bus-utn-volume"
-    paths = os.listdir(taxi_speed)
+    taxi_speed = "data/UTN/Taxi-utn/Taxi-utn-speed/Day-201803{}-taxi-speed.txt"
+    taxi_volume = "data/UTN/Taxi-utn/Taxi-utn-volume/Day-201803{}-taxi-volume.txt"
+    bus_speed = "data/UTN/Bus-utn/Bus-utn-speed/Day-201803{}-bus-speed.txt"
+    bus_volume = "data/UTN/Bus-utn/Bus-utn-volume/Day-201803{}-bus-volume.txt"
+    # paths = os.listdir(taxi_speed)
     speeds = np.empty([7, 24, 21101])
     volumes = np.empty([7, 24, 21101])
-    print(paths[0])
-    get_tensor(taxi_speed + "/" + paths[0])
+
+    # for i in range(5, 12):
+    #     speeds[i-5, :, :] = get_tensor(taxi_speed.format(get_char_index(i)))
+    # np.savetxt("taxi.txt", get_tensor(taxi_speed.format(get_char_index(5))))
+    np.savetxt("b.txt", get_tensor(taxi_speed.format(get_char_index(6))), fmt="%.2f")
+    # n = np.load("taxi.npy")
+    # print(n.shape)
 
 
 def get_tensor(path):
@@ -73,9 +76,38 @@ def get_tensor(path):
             l = line.split(",")
             a = [float(i) for i in l][1:]
             n[:, int(l[0])] = a
-    # for i in range(21101):
-    #     print(n[:, i])
-    # for i in range(10):
-    #     print(n[:, i])
-    print(n[:, -1])
+    return n
 
+
+def get_char_index(n):
+    return "".join(["00", str(n)])[-2:]
+
+
+def get_visual_json_data():
+    g = nx.read_graphml("net.graphml")
+    nodes = g.nodes
+    edges = g.edges
+    data = {}
+    links = list()
+    vertex = list()
+    for edge in edges:
+        current_edge = edges[edge]
+        links.append({
+            "id": edge,
+            "source": edge[0],
+            "target": edge[1],
+            "geometry": current_edge.get("geometry"),
+            "length": current_edge.get("length"),
+        })
+    for node in nodes:
+        current_node = nodes[node]
+        vertex.append({
+            "id": node,
+            "lat": current_node.get("lat"),
+            "lon": current_node.get("lon"),
+        })
+    data["node"] = vertex
+    data["edge"] = links
+
+    with open("changchun.json", "w") as fp:
+        json.dump(data, fp)

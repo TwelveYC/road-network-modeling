@@ -4,11 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>长春</title>
     <script src="js/d3.js"></script>
 </head>
 <body>
+<svg id="main-svg" width="1200" height="960"></svg>
+<script type="module">
+    import request from "./js/request.js";
+    const margin = {left: 20, right: 20, top: 20, bottom:20};
+    const svg = d3.select("#main-svg");
+    const width = +(svg.attr("width"));
+    const height = +(svg.attr("height"));
+    const inner_height = width - margin.top - margin.bottom;
+    const inner_width = width - margin.left - margin.right;
+    const g = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+    request({
+        method: "get",
+        url: "/changchun.json"
+    }).then(res => {
+        console.log(res);
+        const nodes = res.node;
+        const edges = res.edges;
 
+    })
+    request({
+        method: "get",
+        url: "/data/changchun.json"
+    }).then(res => {
+        
+        res.features.forEach((v, i) => {
+            const geometry = v.geometry.coordinates[0];
+            console.log(geometry);
+            g.append("g").selectAll("path")
+                .data(geometry)
+
+        })
+    })
+</script>
+<style>
+    svg{
+        border: 1px solid black;
+    }
+</style>
 </body>
 </html>
