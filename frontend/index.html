@@ -21,9 +21,9 @@
     });
     request({
         method: "get",
-        url: "/changchun.json"
+        url: "/changchun1.json"
     }).then(res => {
-        console.log(res.node);
+        console.log(res);
         const nodes = res.node;
         var layer = new Loca.ScatterPointLayer({
             map: map

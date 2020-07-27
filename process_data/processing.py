@@ -4,9 +4,19 @@ import os
 import numpy as np
 import sys
 import json
+from coordTransform_py.coordTransform_utils import wgs84_to_gcj02
+from functools import reduce
 
 
 def process_data():
+    pass
+
+
+def preprocess_data():
+    """
+    数据预处理，从表格到初级的网络数据
+    :return:
+    """
     g = nx.read_graphml("net.graphml")
     edge_attr = {}
     edge_table = xlrd.open_workbook("data/UTN/Shapefiles/roadNetwork/edges/edges.xlsx").sheet_by_index(0)
@@ -28,8 +38,11 @@ def process_data():
     nx.set_edge_attributes(g, edge_attr)
 
 
-#  矫正原始数据当中的问题
 def correct_data():
+    """
+    矫正数据当中的错误
+    :return:
+    """
     a = nx.Graph()
     a.number_of_edges()
     g = nx.read_graphml("net.graphml")
@@ -49,7 +62,27 @@ def correct_data():
     nx.set_edge_attributes(g, edge_attr)
     nx.write_graphml(g, "net1.graphml")
 
-def get_all_tensor():
+
+def process_tensor():
+    """
+    张量处理相关函数
+    :return:
+    """
+    def get_tensor(path):
+        np.set_printoptions(threshold=sys.maxsize)
+        n = np.empty([24, 21101])
+        # 21101 条边
+        with open(path, "r") as fp:
+            lines = fp.read().splitlines()
+            for line in lines:
+                l = line.split(",")
+                a = [float(i) for i in l][1:]
+                n[:, int(l[0])] = a
+        return n
+
+    def get_char_index(n):
+        return "".join(["00", str(n)])[-2:]
+
     taxi_speed = "data/UTN/Taxi-utn/Taxi-utn-speed/Day-201803{}-taxi-speed.txt"
     taxi_volume = "data/UTN/Taxi-utn/Taxi-utn-volume/Day-201803{}-taxi-volume.txt"
     bus_speed = "data/UTN/Bus-utn/Bus-utn-speed/Day-201803{}-bus-speed.txt"
@@ -66,48 +99,67 @@ def get_all_tensor():
     # print(n.shape)
 
 
-def get_tensor(path):
-    np.set_printoptions(threshold=sys.maxsize)
-    n = np.empty([24, 21101])
-    # 21101 条边
-    with open(path, "r") as fp:
-        lines = fp.read().splitlines()
-        for line in lines:
-            l = line.split(",")
-            a = [float(i) for i in l][1:]
-            n[:, int(l[0])] = a
-    return n
-
-
-def get_char_index(n):
-    return "".join(["00", str(n)])[-2:]
-
-
 def get_visual_json_data():
+    """
+    处理获得可视化的json数据
+    :return:
+    """
     g = nx.read_graphml("net.graphml")
     nodes = g.nodes
     edges = g.edges
     data = {}
     links = list()
     vertex = list()
-    for edge in edges:
-        current_edge = edges[edge]
-        links.append({
-            "id": edge,
-            "source": edge[0],
-            "target": edge[1],
-            "geometry": current_edge.get("geometry"),
-            "length": current_edge.get("length"),
-        })
+
+    def get_geometry(n):
+        temp = list()
+        for i in n[12:-1].split(","):
+            i = i.strip().split(" ")
+            temp.append(wgs84_to_gcj02(float(i[0]), float(i[1])))
+        return temp
+
     for node in nodes:
         current_node = nodes[node]
-        vertex.append({
-            "id": node,
-            "lat": current_node.get("lat"),
-            "lon": current_node.get("lon"),
-        })
+        if current_node.get("lon"):
+            coordinate = wgs84_to_gcj02(float(current_node.get("lon")), float(current_node.get("lat")))
+            vertex.append({
+                "id": node,
+                "lon": coordinate[0],
+                "lat": coordinate[1],
+            })
+        else:
+            vertex.append({
+                "id": node,
+                "lon": None,
+                "lat": None,
+            })
+    for edge in edges:
+        current_edge = edges[edge]
+        if current_edge.get("geometry"):
+            geometry = get_geometry(current_edge.get("geometry"))
+            source = nodes[edge[0]]
+            target = nodes[edge[1]]
+            geometry.insert(0, wgs84_to_gcj02(float(source.get("lon")), float(source.get("lat"))))
+            geometry.append(wgs84_to_gcj02(float(target.get("lon")), float(target.get("lat"))))
+            links.append({
+                "id": edge,
+                "source": edge[0],
+                "target": edge[1],
+                "geometry": geometry,
+                "length": current_edge.get("length"),
+            })
+        else:
+            links.append({
+                "id": edge,
+                "source": edge[0],
+                "target": edge[1],
+                "geometry": None,
+                "length": current_edge.get("length"),
+            })
+
     data["node"] = vertex
     data["edge"] = links
 
-    with open("changchun.json", "w") as fp:
+    with open("changchun2.json", "w") as fp:
         json.dump(data, fp)
+
