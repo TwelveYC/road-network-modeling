@@ -9,7 +9,7 @@ from functools import reduce
 
 
 def process_data():
-    pass
+    process_tensor()
 
 
 def preprocess_data():
@@ -68,6 +68,11 @@ def process_tensor():
     张量处理相关函数
     :return:
     """
+    taxi_speed = "data/UTN/Taxi-utn/Taxi-utn-speed/Day-201803{}-taxi-speed.txt"
+    taxi_volume = "data/UTN/Taxi-utn/Taxi-utn-volume/Day-201803{}-taxi-volume.txt"
+    bus_speed = "data/UTN/Bus-utn/Bus-utn-speed/Day-201803{}-bus-speed.txt"
+    bus_volume = "data/UTN/Bus-utn/Bus-utn-volume/Day-201803{}-bus-volume.txt"
+
     def get_tensor(path):
         np.set_printoptions(threshold=sys.maxsize)
         n = np.empty([24, 21101])
@@ -83,20 +88,18 @@ def process_tensor():
     def get_char_index(n):
         return "".join(["00", str(n)])[-2:]
 
-    taxi_speed = "data/UTN/Taxi-utn/Taxi-utn-speed/Day-201803{}-taxi-speed.txt"
-    taxi_volume = "data/UTN/Taxi-utn/Taxi-utn-volume/Day-201803{}-taxi-volume.txt"
-    bus_speed = "data/UTN/Bus-utn/Bus-utn-speed/Day-201803{}-bus-speed.txt"
-    bus_volume = "data/UTN/Bus-utn/Bus-utn-volume/Day-201803{}-bus-volume.txt"
-    # paths = os.listdir(taxi_speed)
+
     speeds = np.empty([7, 24, 21101])
     volumes = np.empty([7, 24, 21101])
-
+    print("ok")
+    print("ok")
     # for i in range(5, 12):
-    #     speeds[i-5, :, :] = get_tensor(taxi_speed.format(get_char_index(i)))
-    # np.savetxt("taxi.txt", get_tensor(taxi_speed.format(get_char_index(5))))
-    np.savetxt("b.txt", get_tensor(taxi_speed.format(get_char_index(6))), fmt="%.2f")
-    # n = np.load("taxi.npy")
-    # print(n.shape)
+    #     path = bus_speed.format(get_char_index(i))
+    #     speeds[i-5, :, :] = get_tensor(path)
+    # np.save("bus-speeds.npy", speeds)
+    n = np.load("taxi-speeds.npy")
+    print(n[:, :,9])
+    print(n[:, :,9].shape)
 
 
 def get_visual_json_data():

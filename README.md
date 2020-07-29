@@ -31,3 +31,4 @@ complex network modeling for road network modeling.
     + Drew模型同样存在Greenshields模型的缺点，因为它是由Greenshields模型修正得到的。   
     
    已有的速度-密度关系分段模型。通常把密度区域划分为二段或者三段。分二段的模型基本思想是用两种不同的曲线来分别拟合自由流和拥挤流。Edie模型的自由流采用Underwood模型，而拥挤流采用Greenberg模型。分三段的模型则采用三段直线来分别拟合自由流、过渡流和拥挤流，每一个区域都采用Greenshields模型
+##  第三阶段： 相关的聚类和降维算法
