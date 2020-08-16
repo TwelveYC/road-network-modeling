@@ -89,17 +89,33 @@ def process_tensor():
         return "".join(["00", str(n)])[-2:]
 
 
-    speeds = np.empty([7, 24, 21101])
-    volumes = np.empty([7, 24, 21101])
-    print("ok")
-    print("ok")
+    # speeds = np.empty([7, 24, 21101])
+    # volumes = np.empty([7, 24, 21101])
+    # print("ok")
+    # print("ok")
+    # # for i in range(5, 12):
+    # #     path = taxi_volume.format(get_char_index(i))
+    # #     t = get_tensor(path)
+    # #     print(t[:,5])
+    # edge_table = xlrd.open_workbook("data/UTN/Shapefiles/roadNetwork/edges/edges.xlsx").sheet_by_index(0)
+    # # # 边的字段有：from highway length oneway to nodescount road_id
     # for i in range(5, 12):
-    #     path = bus_speed.format(get_char_index(i))
-    #     speeds[i-5, :, :] = get_tensor(path)
-    # np.save("bus-speeds.npy", speeds)
-    n = np.load("taxi-speeds.npy")
-    print(n[:, :,9])
-    print(n[:, :,9].shape)
+    #     path = bus_volume.format(get_char_index(i))
+    #     volumes[i-5, :, :] = get_tensor(path)
+    #
+    # v = edge_table.col(2)
+    # r = np.empty([7, 24, 21101])
+    # index = 0
+    # for i in v:
+    #     if i.value != "length":
+    #         r[:, :, index] = np.true_divide(volumes[:, :, index], float(i.value)/1000)
+    #         index += 1
+    # np.save("bus-flow", r)
+    # np.save("bus-volume", volumes)
+
+
+
+
 
 
 def get_visual_json_data():
