@@ -64,11 +64,18 @@ def mnist():
 
 def test():
     # tl.set_backend('pytorch')
-    n = np.load("data/taxi-speeds张量分解之后的结果/taxi-speeds-2.npy")
-    print(n)
+    n = np.loadtxt("data/npy/taxi-speed.txt")
+    b = []
+    for i in n.T:
+        if not (i == 0).all():
+            b.append(i)
+    b = np.array(b)
+    print(b.shape)
     tsne = manifold.TSNE(n_components=2, init="pca", random_state=0)
-    result = tsne.fit_transform(n)
+
+    result = tsne.fit_transform(b)
     print(result)
+    print(result.shape)
     x_min, x_max = np.min(result, 0), np.max(result, 0)
 
     print(result.shape)

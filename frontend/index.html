@@ -1,57 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="./js/gdmap.js"></script>
-    <script src="./js/loca.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="./js/echarts.common.js"></script>
 </head>
 <body>
-<div id="container"></div>
-<script type="module">
-    import request from "./js/request.js";
-    var map = new AMap.Map('container',{
-        mapStyle: 'amap://styles/grey',
-        zoom:13,//级别
-        center: [125.35, 43.88],
-        viewMode:'3D'//使用3D视图
-    });
-    request({
-        method: "get",
-        url: "/changchun1.json"
-    }).then(res => {
-        console.log(res);
-        const nodes = res.node;
-        var layer = new Loca.ScatterPointLayer({
-            map: map
-        });
-        layer.setData(nodes, {
-            lnglat: function(v) {
-                const value = v.value;
-                return [parseFloat(value.lon), parseFloat(value.lat)]
-            }
-        });
-        // 配置样式
-        layer.setOptions({
-            unit: 'px',
-            style: {
-                radius: 2,     // 圆形半径，单位像素
-                color: '#14B4C9', // 填充颜色
-                borderWidth: 0.5,   // 边框宽度
-                borderColor: '#14B4C9'  // 边框颜色
-            }
-        });
-
-        layer.render();
-    })
-</script>
-<style>
-    html{height:100%}
-    body{height:100%;margin:0px;padding:0px}
-    #container{height:100%}
-</style>
+    <div id="main" style="width: 800px; height: 800px;"></div>
+    <input type="number" id="change-data">
+    <script>
+        function request(config) {
+            return new Promise((resolve, reject) => {
+                const instance = new XMLHttpRequest();
+                instance.open(config.method, config.url);
+                instance.send();
+                instance.onload = function () {
+                    console.log(this.responseText.length)
+                    resolve(JSON.parse(this.responseText));
+                }
+            })
+        };
+        let source ;
+        const change_data_input = document.getElementById("change-data");
+        const charts = echarts.init(document.getElementById("main"));
+        request({
+            // url: "/data/load_json/taxiflow.json",
+            url: "/taxi-flow.json",
+            method: "GET"
+        }).then(res => {
+            source = res;
+            console.log(source);
+            const data_source = []
+            source.forEach(v => {
+                data_source.push(...v);
+            })
+            console.log(data_source.length)
+            const option = {
+                xAxis: {},
+                yAxis: {},
+                series: [{
+                    type: "scatter",
+                    symbolSize: 3,
+                    data: data_source
+                }]
+            };
+            charts.setOption(option);
+        })
+    </script>
 </body>
 </html>

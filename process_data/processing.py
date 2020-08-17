@@ -9,7 +9,7 @@ from functools import reduce
 
 
 def process_data():
-    process_tensor()
+    get_visual_data()
 
 
 def preprocess_data():
@@ -87,38 +87,15 @@ def process_tensor():
 
     def get_char_index(n):
         return "".join(["00", str(n)])[-2:]
+    speeds = np.empty([168, 21101])
+    for i in range(5, 12):
+        path = bus_volume.format(get_char_index(i))
+        speeds[(i- 1 - 4) * 24: (i - 4) * 24, :] = get_tensor(path)
+        print(path)
+    np.savetxt('bus-volume.txt', speeds, fmt='%.2f')
 
 
-    # speeds = np.empty([7, 24, 21101])
-    # volumes = np.empty([7, 24, 21101])
-    # print("ok")
-    # print("ok")
-    # # for i in range(5, 12):
-    # #     path = taxi_volume.format(get_char_index(i))
-    # #     t = get_tensor(path)
-    # #     print(t[:,5])
-    # edge_table = xlrd.open_workbook("data/UTN/Shapefiles/roadNetwork/edges/edges.xlsx").sheet_by_index(0)
-    # # # 边的字段有：from highway length oneway to nodescount road_id
-    # for i in range(5, 12):
-    #     path = bus_volume.format(get_char_index(i))
-    #     volumes[i-5, :, :] = get_tensor(path)
-    #
-    # v = edge_table.col(2)
-    # r = np.empty([7, 24, 21101])
-    # index = 0
-    # for i in v:
-    #     if i.value != "length":
-    #         r[:, :, index] = np.true_divide(volumes[:, :, index], float(i.value)/1000)
-    #         index += 1
-    # np.save("bus-flow", r)
-    # np.save("bus-volume", volumes)
-
-
-
-
-
-
-def get_visual_json_data():
+def get_visual_data():
     """
     处理获得可视化的json数据
     :return:
@@ -129,56 +106,4 @@ def get_visual_json_data():
     data = {}
     links = list()
     vertex = list()
-
-    def get_geometry(n):
-        temp = list()
-        for i in n[12:-1].split(","):
-            i = i.strip().split(" ")
-            temp.append(wgs84_to_gcj02(float(i[0]), float(i[1])))
-        return temp
-
-    for node in nodes:
-        current_node = nodes[node]
-        if current_node.get("lon"):
-            coordinate = wgs84_to_gcj02(float(current_node.get("lon")), float(current_node.get("lat")))
-            vertex.append({
-                "id": node,
-                "lon": coordinate[0],
-                "lat": coordinate[1],
-            })
-        else:
-            vertex.append({
-                "id": node,
-                "lon": None,
-                "lat": None,
-            })
-    for edge in edges:
-        current_edge = edges[edge]
-        if current_edge.get("geometry"):
-            geometry = get_geometry(current_edge.get("geometry"))
-            source = nodes[edge[0]]
-            target = nodes[edge[1]]
-            geometry.insert(0, wgs84_to_gcj02(float(source.get("lon")), float(source.get("lat"))))
-            geometry.append(wgs84_to_gcj02(float(target.get("lon")), float(target.get("lat"))))
-            links.append({
-                "id": edge,
-                "source": edge[0],
-                "target": edge[1],
-                "geometry": geometry,
-                "length": current_edge.get("length"),
-            })
-        else:
-            links.append({
-                "id": edge,
-                "source": edge[0],
-                "target": edge[1],
-                "geometry": None,
-                "length": current_edge.get("length"),
-            })
-
-    data["node"] = vertex
-    data["edge"] = links
-
-    with open("changchun2.json", "w") as fp:
-        json.dump(data, fp)
 
