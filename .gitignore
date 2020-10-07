@@ -133,3 +133,5 @@ dmypy.json
 data/
 
 history_data/
+
+sumo_simulation/

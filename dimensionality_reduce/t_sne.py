@@ -4,12 +4,13 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 import numpy as np
-from tensorly.decomposition import tucker, parafac, non_negative_parafac
-from tensorly import kruskal_to_tensor
-import tensorly as tl
+# from tensorly.decomposition import tucker, parafac, non_negative_parafac
+# from tensorly import kruskal_to_tensor
+# import tensorly as tl
 
 
 def t_sne():
+    test()
     test()
 
 
